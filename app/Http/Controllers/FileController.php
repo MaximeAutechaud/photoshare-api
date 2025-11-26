@@ -2,12 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Services\FileManagerService;
+use App\Models\Media;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Pion\Laravel\ChunkUpload\Handler\ResumableJSUploadHandler;
-use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
+use Illuminate\Support\Facades\Auth;
 
 class FileController extends Controller
 {
+    public FileManagerService $service;
+
+    public function __construct(FileManagerService $service)
+    {
+        $this->service = $service;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -19,16 +28,17 @@ class FileController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        $reciver = new FileReceiver($request->file, $request, ResumableJSUploadHandler::class);
-        $save = $reciver->receive();
-        $handler = $save->handler();
-        return response()->json([
-            'progress' => $handler->getPercentageDone(),
-        ]);
-        // recup les files
-        // les enregistrer
+        $response = $this->service->store($request);
+
+        return response()->json($response);
+    }
+
+    public function list(): JsonResponse
+    {
+        $urls = Media::query()->where('user_id', Auth::id())->get();
+        return response()->json($urls);
     }
 
     /**
@@ -50,8 +60,8 @@ class FileController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id): JsonResponse
     {
-        //
+        return $this->service->deleteFile($id);
     }
 }
