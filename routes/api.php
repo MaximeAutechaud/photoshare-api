@@ -17,5 +17,6 @@ Route::post('/signup', [AuthController::class, 'signup']);
 Route::post('/login', [AuthController::class, 'authenticate']);
 Route::post('/logout', [AuthController::class, 'logout']);
 Route::post('/upload-files', [FileController::class, 'store'])->middleware('auth:sanctum');
+Route::delete('/destroy-file/{id}', [FileController::class, 'destroy'])->middleware('auth:sanctum');
 Route::get('/dashboard', [AuthController::class, 'dashboard'])->middleware('auth:sanctum');
 Route::get('/fetch-gallery', [FileController::class, 'list'])->middleware('auth:sanctum');

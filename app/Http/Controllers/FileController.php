@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Auth;
 
 class FileController extends Controller
 {
+    public FileManagerService $service;
+
+    public function __construct(FileManagerService $service)
+    {
+        $this->service = $service;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -23,8 +30,7 @@ class FileController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $service = new FileManagerService();
-        $response = $service->store($request);
+        $response = $this->service->store($request);
 
         return response()->json($response);
     }
@@ -54,8 +60,8 @@ class FileController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id): JsonResponse
     {
-        //
+        return $this->service->deleteFile($id);
     }
 }

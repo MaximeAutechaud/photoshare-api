@@ -7,6 +7,7 @@ use App\Models\Media;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Pion\Laravel\ChunkUpload\Handler\ResumableJSUploadHandler;
 use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
@@ -56,5 +57,20 @@ class FileManagerService
         return response()->json([
             'progress' => $handler->getPercentageDone(),
         ]);
+    }
+
+    public function deleteFile(string $id):JsonResponse
+    {
+        $media = Media::query()->findOrFail($id);
+        if ($media && $media->user_id === Auth::id()) {
+            DB::transaction(function () use ($media) {
+                $service = new S3Service();
+                $service->deleteObject($media->s3_url);
+                DB::table('medias')->where('id', $media->id)->delete();
+            });
+            $res = ['success' => true];
+        }
+        return response()->json($res ?? ['success' => false]);
+
     }
 }
